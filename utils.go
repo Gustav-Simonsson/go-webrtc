@@ -23,6 +23,8 @@ func NewCGOMap() CGOMap {
 }
 
 func (m *CGOMap) Get(index int) interface{} {
+	defer m.lock.Unlock()
+	m.lock.Lock()
 	p, ok := m.pointers[index]
 	if p == nil || !ok {
 		panic("couldn't retrieve the pointer")
@@ -31,17 +33,17 @@ func (m *CGOMap) Get(index int) interface{} {
 }
 
 func (m *CGOMap) Set(p interface{}) int {
+	defer m.lock.Unlock()
 	m.lock.Lock()
 	m.index += 1
 	m.pointers[m.index] = p
-	m.lock.Unlock()
 	return m.index
 }
 
 func (m *CGOMap) Delete(index int) {
+	defer m.lock.Unlock()
 	m.lock.Lock()
 	delete(m.pointers, index)
-	m.lock.Unlock()
 }
 
 // Return a string value for an integer enum from a mapping array
